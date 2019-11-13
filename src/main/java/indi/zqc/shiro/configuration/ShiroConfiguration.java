@@ -4,15 +4,25 @@ import indi.zqc.shiro.filter.AdminFilter;
 import indi.zqc.shiro.filter.ClientFilter;
 import indi.zqc.shiro.realm.AdminRealm;
 import indi.zqc.shiro.realm.ClientRealm;
+import org.apache.shiro.cache.CacheManager;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.realm.Realm;
+import org.apache.shiro.session.mgt.SessionManager;
+import org.apache.shiro.session.mgt.eis.SessionDAO;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
+import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
+import org.crazycake.shiro.RedisCacheManager;
+import org.crazycake.shiro.RedisManager;
+import org.crazycake.shiro.RedisSessionDAO;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.servlet.Filter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,6 +42,42 @@ public class ShiroConfiguration {
     @Bean
     public Realm adminRealm() {
         return new AdminRealm();
+    }
+
+    @Bean
+    @ConfigurationProperties(prefix = "shiro.redis")
+    public RedisManager redisManager() {
+        return new RedisManager();
+    }
+
+    @Bean
+    public CacheManager cacheManager() {
+        RedisCacheManager cacheManager = new RedisCacheManager();
+        cacheManager.setRedisManager(redisManager());
+        return cacheManager;
+    }
+
+    @Bean
+    public SessionDAO sessionDAO() {
+        RedisSessionDAO sessionDAO = new RedisSessionDAO();
+        sessionDAO.setRedisManager(redisManager());
+        return sessionDAO;
+    }
+
+    @Bean
+    public SessionManager sessionManager() {
+        DefaultWebSessionManager sessionManager = new DefaultWebSessionManager();
+        sessionManager.setSessionDAO(sessionDAO());
+        return sessionManager;
+    }
+
+    @Bean
+    public DefaultWebSecurityManager securityManager(List<Realm> realms, CacheManager cacheManager, SessionManager sessionManager) {
+        DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
+        securityManager.setRealms(realms);
+        securityManager.setCacheManager(cacheManager);
+        securityManager.setSessionManager(sessionManager);
+        return securityManager;
     }
 
     @Bean

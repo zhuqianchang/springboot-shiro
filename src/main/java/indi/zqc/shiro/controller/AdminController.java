@@ -3,7 +3,7 @@ package indi.zqc.shiro.controller;
 import indi.zqc.shiro.constant.Constants;
 import indi.zqc.shiro.core.APIResponse;
 import indi.zqc.shiro.core.SessionUser;
-import indi.zqc.shiro.token.ClientToken;
+import indi.zqc.shiro.token.AdminToken;
 import indi.zqc.shiro.util.AuthUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +22,7 @@ public class AdminController {
 
     @PostMapping("/login")
     public APIResponse<SessionUser> login(String username, String password) {
-        SessionUser sessionUser = (SessionUser) AuthUtils.login(new ClientToken(username, password));
+        SessionUser sessionUser = (SessionUser) AuthUtils.login(new AdminToken(username, password));
         AuthUtils.setSessionUser(Constants.ADMIN_USER, sessionUser);
         return APIResponse.success(sessionUser);
     }
