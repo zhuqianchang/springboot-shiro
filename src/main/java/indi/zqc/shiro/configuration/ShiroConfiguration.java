@@ -1,5 +1,6 @@
 package indi.zqc.shiro.configuration;
 
+import indi.zqc.shiro.constant.Constants;
 import indi.zqc.shiro.filter.AdminFilter;
 import indi.zqc.shiro.filter.ClientFilter;
 import indi.zqc.shiro.realm.AdminRealm;
@@ -12,9 +13,8 @@ import org.apache.shiro.session.mgt.eis.SessionDAO;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
-import org.crazycake.shiro.RedisCacheManager;
-import org.crazycake.shiro.RedisManager;
-import org.crazycake.shiro.RedisSessionDAO;
+import org.crazycake.shiro.*;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,30 +44,54 @@ public class ShiroConfiguration {
         return new AdminRealm();
     }
 
+    /**
+     * Redis 单机模式
+     */
     @Bean
-    @ConfigurationProperties(prefix = "shiro.redis")
+    @ConfigurationProperties(prefix = Constants.PREFIX)
+    @ConditionalOnProperty(name = Constants.PREFIX + ".type", havingValue = "single", matchIfMissing = true)
     public RedisManager redisManager() {
         return new RedisManager();
     }
 
+    /**
+     * Redis 集群模式
+     */
     @Bean
-    public CacheManager cacheManager() {
+    @ConfigurationProperties(prefix = Constants.PREFIX)
+    @ConditionalOnProperty(name = Constants.PREFIX + ".type", havingValue = "cluster")
+    public RedisClusterManager redisClusterManager() {
+        return new RedisClusterManager();
+    }
+
+    /**
+     * Redis 哨兵模式
+     */
+    @Bean
+    @ConfigurationProperties(prefix = Constants.PREFIX)
+    @ConditionalOnProperty(name = Constants.PREFIX + ".type", havingValue = "sentinel")
+    public RedisSentinelManager redisSentinelManager() {
+        return new RedisSentinelManager();
+    }
+
+    @Bean
+    public CacheManager cacheManager(IRedisManager redisManager) {
         RedisCacheManager cacheManager = new RedisCacheManager();
-        cacheManager.setRedisManager(redisManager());
+        cacheManager.setRedisManager(redisManager);
         return cacheManager;
     }
 
     @Bean
-    public SessionDAO sessionDAO() {
+    public SessionDAO sessionDAO(IRedisManager redisManager) {
         RedisSessionDAO sessionDAO = new RedisSessionDAO();
-        sessionDAO.setRedisManager(redisManager());
+        sessionDAO.setRedisManager(redisManager);
         return sessionDAO;
     }
 
     @Bean
-    public SessionManager sessionManager() {
+    public SessionManager sessionManager(SessionDAO sessionDAO) {
         DefaultWebSessionManager sessionManager = new DefaultWebSessionManager();
-        sessionManager.setSessionDAO(sessionDAO());
+        sessionManager.setSessionDAO(sessionDAO);
         return sessionManager;
     }
 

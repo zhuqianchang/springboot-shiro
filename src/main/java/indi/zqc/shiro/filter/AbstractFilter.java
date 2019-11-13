@@ -1,6 +1,6 @@
 package indi.zqc.shiro.filter;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.Gson;
 import indi.zqc.shiro.core.APIResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.web.filter.AccessControlFilter;
@@ -28,7 +28,7 @@ public abstract class AbstractFilter extends AccessControlFilter {
     private void write(ServletResponse response, APIResponse apiResponse) {
         if (response instanceof HttpServletResponse) {
             HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-            String jsonObject = JSONObject.toJSONString(apiResponse);
+            String jsonObject = new Gson().toJson(apiResponse);
             httpServletResponse.setHeader("Content-Type", "application/json;charset=UTF-8");
             httpServletResponse.setContentType("application/json;charset=UTF-8");
             PrintWriter out = null;
