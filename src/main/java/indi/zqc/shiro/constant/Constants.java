@@ -14,5 +14,7 @@ public class Constants {
 
     public static final String ROLE_ADMIN = "ADMIN";
 
-    public static final String PREFIX = "shiro.redis";
+    public static final String SHITO_REDIS_PREFIX = "shiro.redis";
+
+    public static final String PRINCIPAL_ID_FIELD_NAME = "username";
 }

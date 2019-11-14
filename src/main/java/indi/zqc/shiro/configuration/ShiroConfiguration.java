@@ -3,6 +3,7 @@ package indi.zqc.shiro.configuration;
 import indi.zqc.shiro.constant.Constants;
 import indi.zqc.shiro.filter.AdminFilter;
 import indi.zqc.shiro.filter.ClientFilter;
+import indi.zqc.shiro.filter.KickoutSessionFilter;
 import indi.zqc.shiro.realm.AdminRealm;
 import indi.zqc.shiro.realm.ClientRealm;
 import org.apache.shiro.cache.CacheManager;
@@ -48,8 +49,8 @@ public class ShiroConfiguration {
      * Redis 单机模式
      */
     @Bean
-    @ConfigurationProperties(prefix = Constants.PREFIX)
-    @ConditionalOnProperty(name = Constants.PREFIX + ".type", havingValue = "single", matchIfMissing = true)
+    @ConfigurationProperties(prefix = Constants.SHITO_REDIS_PREFIX)
+    @ConditionalOnProperty(name = Constants.SHITO_REDIS_PREFIX + ".type", havingValue = "single", matchIfMissing = true)
     public RedisManager redisManager() {
         return new RedisManager();
     }
@@ -58,8 +59,8 @@ public class ShiroConfiguration {
      * Redis 集群模式
      */
     @Bean
-    @ConfigurationProperties(prefix = Constants.PREFIX)
-    @ConditionalOnProperty(name = Constants.PREFIX + ".type", havingValue = "cluster")
+    @ConfigurationProperties(prefix = Constants.SHITO_REDIS_PREFIX)
+    @ConditionalOnProperty(name = Constants.SHITO_REDIS_PREFIX + ".type", havingValue = "cluster")
     public RedisClusterManager redisClusterManager() {
         return new RedisClusterManager();
     }
@@ -68,8 +69,8 @@ public class ShiroConfiguration {
      * Redis 哨兵模式
      */
     @Bean
-    @ConfigurationProperties(prefix = Constants.PREFIX)
-    @ConditionalOnProperty(name = Constants.PREFIX + ".type", havingValue = "sentinel")
+    @ConfigurationProperties(prefix = Constants.SHITO_REDIS_PREFIX)
+    @ConditionalOnProperty(name = Constants.SHITO_REDIS_PREFIX + ".type", havingValue = "sentinel")
     public RedisSentinelManager redisSentinelManager() {
         return new RedisSentinelManager();
     }
@@ -77,6 +78,7 @@ public class ShiroConfiguration {
     @Bean
     public CacheManager cacheManager(IRedisManager redisManager) {
         RedisCacheManager cacheManager = new RedisCacheManager();
+        cacheManager.setPrincipalIdFieldName(Constants.PRINCIPAL_ID_FIELD_NAME);
         cacheManager.setRedisManager(redisManager);
         return cacheManager;
     }
@@ -112,6 +114,7 @@ public class ShiroConfiguration {
         Map<String, Filter> filters = new HashMap<>();
         filters.put("clientFilter", new ClientFilter());
         filters.put("adminFilter", new AdminFilter());
+        filters.put("kickoutFilter", new KickoutSessionFilter((DefaultWebSecurityManager) securityManager));
         shiroFilterFactoryBean.setFilters(filters);
 
         // 此处必须LinkedHashMap
@@ -126,7 +129,7 @@ public class ShiroConfiguration {
         definitions.put("/swagger-resources/**", "anon");
         definitions.put("/v2/**", "anon");
         // 权限拦截
-        definitions.put("/client/**", "clientFilter");
+        definitions.put("/client/**", "kickoutFilter,clientFilter");
         definitions.put("/admin/**", "adminFilter");
         shiroFilterFactoryBean.setFilterChainDefinitionMap(definitions);
 

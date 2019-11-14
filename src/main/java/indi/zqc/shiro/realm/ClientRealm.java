@@ -55,4 +55,12 @@ public class ClientRealm extends AuthorizingRealm {
     public Class getAuthenticationTokenClass() {
         return ClientToken.class;
     }
+
+    /**
+     * 认证缓存名称
+     */
+    @Override
+    public String getAuthenticationCacheName() {
+        return ClientToken.class.getSimpleName();
+    }
 }

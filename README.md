@@ -5,7 +5,7 @@
 
 ## 使用技术
 * SpringBoot 2.0.3.RELEASE
-* Shiro 1.3.2
+* Shiro 1.4.1
 * shiro-redis 3.2.3
 * Lombok
 * Swagger2 2.8.0
@@ -13,6 +13,7 @@
 ## 实现功能
 * 集成Shiro，实现多身份认证和授权
 * 开启权限注解，实现注解权限拦截
+* 限制同一个用户同时在线数
 * 集成Redis，支持单例、集群和哨兵模式
 * 集成Swagger2，方便API调用测试
 
