@@ -18,4 +18,8 @@ public class SessionUser implements Serializable {
     private static final long serialVersionUID = -2923443782071018572L;
 
     private String username;
+
+    public String getId() {
+        return username;
+    }
 }
